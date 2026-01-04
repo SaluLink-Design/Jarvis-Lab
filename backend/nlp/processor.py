@@ -173,7 +173,7 @@ Return your analysis in a structured JSON format."""
             intent = "create"
             if any(word in text_lower for word in ["delete", "remove", "clear"]):
                 intent = "delete"
-            elif any(word in text_lower for word in ["change", "modify", "update", "make"]):
+            elif any(word in text_lower for word in ["change", "modify", "update"]):
                 intent = "modify"
             elif any(word in text_lower for word in ["what", "show", "how many", "?"]):
                 intent = "query"
@@ -183,10 +183,34 @@ Return your analysis in a structured JSON format."""
             # Extract entities
             entities = []
 
-            # Common 3D objects
-            objects = ["cube", "sphere", "cylinder", "cone", "plane", "car", "tree", "house",
-                      "chair", "table", "building", "forest", "mountain", "river", "sky"]
-            for obj in objects:
+            # Primitive shapes
+            primitive_shapes = ["cube", "sphere", "cylinder", "cone", "plane"]
+
+            # Environments
+            environments = ["forest", "city", "interior", "desert", "ocean", "mountain", "river"]
+
+            # Complex objects
+            complex_objects = ["car", "tree", "house", "chair", "table", "building", "sky"]
+
+            # Check for primitive shapes
+            for shape in primitive_shapes:
+                if shape in text_lower:
+                    entities.append({
+                        "type": "object",
+                        "value": shape,
+                        "attributes": self._extract_attributes(text_lower, shape)
+                    })
+
+            # Check for environments
+            for env in environments:
+                if env in text_lower:
+                    entities.append({
+                        "type": "environment",
+                        "value": env
+                    })
+
+            # Check for complex objects
+            for obj in complex_objects:
                 if obj in text_lower:
                     entities.append({
                         "type": "object",
@@ -197,7 +221,7 @@ Return your analysis in a structured JSON format."""
             print(f"[NLP_RULES] Found {len(entities)} entities")
 
             # Extract colors
-            colors = ["red", "blue", "green", "yellow", "white", "black", "purple", "orange"]
+            colors = ["red", "blue", "green", "yellow", "white", "black", "purple", "orange", "cyan", "magenta", "brown", "gray"]
             attributes = {}
             for color in colors:
                 if color in text_lower:
