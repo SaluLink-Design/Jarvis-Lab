@@ -64,7 +64,12 @@ async def process_request(
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_msg = str(e)
+        error_trace = traceback.format_exc()
+        print(f"ERROR in process_request: {error_msg}")
+        print(f"Traceback: {error_trace}")
+        raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
 
 
 @router.post("/text")
