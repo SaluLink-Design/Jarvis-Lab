@@ -291,9 +291,13 @@ class JarvisOrchestrator:
         try:
             text_analysis = processed_data.get("text_analysis") or {}
             image_analysis = processed_data.get("image_analysis") or {}
+            has_text = text_analysis and not text_analysis.get("error")
+            has_image = image_analysis and not image_analysis.get("error")
+
+            print(f"[ACTION_PLAN] Has text: {has_text}, Has image: {has_image}")
 
             # Analyze intent from text
-            if text_analysis and not text_analysis.get("error"):
+            if has_text:
                 print(f"[ACTION_PLAN] Text analysis available")
                 intent = text_analysis.get("intent", "create")
                 entities = text_analysis.get("entities", [])
@@ -305,10 +309,15 @@ class JarvisOrchestrator:
                     if entities:
                         for entity in entities:
                             if entity.get("type") == "object":
+                                # Merge image attributes with text attributes
+                                merged_attrs = self._merge_attributes(
+                                    entity.get("attributes", {}),
+                                    image_analysis
+                                )
                                 plan.append({
                                     "action": "generate_object",
                                     "object_type": entity.get("value"),
-                                    "attributes": entity.get("attributes", {})
+                                    "attributes": merged_attrs
                                 })
                             elif entity.get("type") == "environment":
                                 plan.append({
@@ -316,12 +325,13 @@ class JarvisOrchestrator:
                                     "environment_type": entity.get("value")
                                 })
                     else:
-                        # No entities found, create a default object
-                        print(f"[ACTION_PLAN] No entities found, using default cube")
+                        # No entities found, create a default object with image attributes
+                        print(f"[ACTION_PLAN] No entities found in text, using default object with image attributes")
+                        image_attrs = self._extract_image_attributes(image_analysis)
                         plan.append({
                             "action": "generate_object",
                             "object_type": "cube",
-                            "attributes": attributes
+                            "attributes": {**attributes, **image_attrs}
                         })
 
                 elif intent == "modify":
@@ -338,9 +348,30 @@ class JarvisOrchestrator:
                         "targets": entities
                     })
 
-            # Enhance with image data
-            if image_analysis and not image_analysis.get("error"):
-                print(f"[ACTION_PLAN] Image analysis available")
+            # Handle image-only input (no text)
+            elif has_image:
+                print(f"[ACTION_PLAN] Image analysis available but no text command")
+                # Create objects based on image analysis
+                image_attrs = self._extract_image_attributes(image_analysis)
+                print(f"[ACTION_PLAN] Image attributes extracted: {image_attrs}")
+
+                # Create a sphere or geometric shape based on image complexity
+                complexity = image_analysis.get("complexity", 0.5)
+                if complexity > 0.5:
+                    object_type = "sphere"
+                else:
+                    object_type = "cube"
+
+                plan.append({
+                    "action": "generate_object",
+                    "object_type": object_type,
+                    "attributes": image_attrs,
+                    "source": "image_analysis"
+                })
+
+            # Enhance with image data if both text and image exist
+            if has_image and has_text:
+                print(f"[ACTION_PLAN] Enhancing plan with image styling")
                 detected_objects = image_analysis.get("objects", [])
                 if detected_objects:
                     plan.append({
@@ -371,6 +402,89 @@ class JarvisOrchestrator:
                 "object_type": "cube",
                 "attributes": {"color": "blue"}
             }]
+
+    def _extract_image_attributes(self, image_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract useful attributes from image analysis"""
+        attributes = {}
+
+        # Extract dominant color
+        dominant_colors = image_analysis.get("dominant_colors", [])
+        if dominant_colors:
+            # Convert RGB to color name
+            color_rgb = dominant_colors[0]
+            if isinstance(color_rgb, list) and len(color_rgb) >= 3:
+                color_name = self._rgb_to_color_name(color_rgb)
+                if color_name:
+                    attributes["color"] = color_name
+
+        # Extract style information
+        style = image_analysis.get("style", {})
+        if style and not style.get("error"):
+            if style.get("style_type"):
+                attributes["style"] = style.get("style_type")
+            if style.get("mood"):
+                attributes["mood"] = style.get("mood")
+
+        # Add complexity-based size hint
+        complexity = image_analysis.get("complexity", 0.5)
+        if complexity > 0.7:
+            attributes["complexity"] = "high"
+        elif complexity < 0.3:
+            attributes["complexity"] = "low"
+
+        return attributes
+
+    def _merge_attributes(
+        self,
+        text_attributes: Dict[str, Any],
+        image_analysis: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Merge text-based and image-based attributes"""
+        merged = text_attributes.copy()
+
+        # Add image attributes only if not already specified in text
+        image_attrs = self._extract_image_attributes(image_analysis)
+        for key, value in image_attrs.items():
+            if key not in merged:
+                merged[key] = value
+
+        return merged
+
+    def _rgb_to_color_name(self, rgb: List[int]) -> Optional[str]:
+        """Convert RGB values to color names"""
+        if len(rgb) < 3:
+            return None
+
+        r, g, b = rgb[0], rgb[1], rgb[2]
+
+        # Simple color name mapping based on RGB values
+        color_map = {
+            "red": (255, 0, 0),
+            "green": (0, 128, 0),
+            "blue": (0, 0, 255),
+            "yellow": (255, 255, 0),
+            "cyan": (0, 255, 255),
+            "magenta": (255, 0, 255),
+            "white": (255, 255, 255),
+            "black": (0, 0, 0),
+            "gray": (128, 128, 128)
+        }
+
+        # Find closest color
+        min_distance = float('inf')
+        closest_color = None
+
+        for color_name, (cr, cg, cb) in color_map.items():
+            distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2) ** 0.5
+            if distance < min_distance:
+                min_distance = distance
+                closest_color = color_name
+
+        # Only return color if it's reasonably close
+        if min_distance < 100:
+            return closest_color
+
+        return None
     
     async def _execute_action_plan(
         self,
