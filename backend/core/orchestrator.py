@@ -8,10 +8,10 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from backend.nlp.processor import NLPProcessor
-from backend.cv.processor import ComputerVisionProcessor
-from backend.generation.text_to_3d import TextTo3DGenerator
-from backend.generation.scene_builder import SceneBuilder
+from nlp.processor import NLPProcessor
+from cv.processor import ComputerVisionProcessor
+from generation.text_to_3d import TextTo3DGenerator
+from generation.scene_builder import SceneBuilder
 
 
 @dataclass
