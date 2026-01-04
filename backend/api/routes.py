@@ -116,65 +116,96 @@ async def process_text(request: TextRequest):
     """
     import traceback
     from datetime import datetime
+    import sys
+
+    error_response_template = {
+        "context_id": str(uuid.uuid4()),
+        "result": {
+            "actions_executed": 0,
+            "results": [],
+            "success": False,
+            "error": None
+        },
+        "scene": {
+            "scene_id": str(uuid.uuid4()),
+            "objects": [],
+            "environment": {},
+            "lighting": {},
+            "camera": {},
+            "created_at": datetime.now().isoformat()
+        },
+        "status": "error",
+        "message": None
+    }
 
     try:
         from main import orchestrator
 
-        print(f"Received text request: {request.text[:50] if request.text else 'None'}...")
+        print(f"\n{'='*80}")
+        print(f"[TEXT ENDPOINT] Received request")
+        print(f"Text: {request.text[:100] if request.text else 'None'}...")
         print(f"Context ID: {request.context_id}")
         print(f"Orchestrator available: {orchestrator is not None}")
+        print(f"{'='*80}\n")
 
         if not orchestrator:
-            raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+            print("❌ Orchestrator is None!")
+            error_response = error_response_template.copy()
+            error_response["status"] = "error"
+            error_response["message"] = "Orchestrator not initialized on server"
+            error_response["result"]["error"] = "Orchestrator not initialized"
+            return error_response
 
-        print(f"Orchestrator modules - NLP: {orchestrator.nlp_processor is not None}, CV: {orchestrator.cv_processor is not None}, 3D: {orchestrator.text_to_3d is not None}")
+        print(f"✓ Orchestrator modules:")
+        print(f"  - NLP: {orchestrator.nlp_processor is not None}")
+        print(f"  - CV: {orchestrator.cv_processor is not None}")
+        print(f"  - Text-to-3D: {orchestrator.text_to_3d is not None}")
+        print(f"  - Scene Builder: {orchestrator.scene_builder is not None}")
 
-        result = await orchestrator.process_request(
-            text=request.text,
-            context_id=request.context_id
-        )
+        # Call orchestrator with proper async handling
+        print(f"[TEXT ENDPOINT] Calling orchestrator.process_request...")
+        try:
+            result = await orchestrator.process_request(
+                text=request.text,
+                context_id=request.context_id
+            )
+            print(f"[TEXT ENDPOINT] Orchestrator returned successfully")
+        except Exception as proc_error:
+            print(f"❌ Orchestrator.process_request failed: {str(proc_error)}")
+            print(traceback.format_exc())
+            error_response = error_response_template.copy()
+            error_response["status"] = "error"
+            error_response["message"] = f"Processing error: {str(proc_error)}"
+            error_response["result"]["error"] = str(proc_error)
+            return error_response
 
-        # Check if the orchestrator returned an error status but still return 200
+        # Check response status
         if result.get("status") == "error":
             print(f"⚠️ Orchestrator returned error status: {result.get('message', 'Unknown error')}")
-            # Return the error result with 200 status (client will handle the error)
             return result
 
         print(f"✅ Successfully processed request. Context ID: {result.get('context_id', 'unknown')}")
+        print(f"Objects created: {len(result.get('scene', {}).get('objects', []))}")
         return result
 
-    except HTTPException:
-        raise
     except Exception as e:
         error_msg = str(e)
         error_trace = traceback.format_exc()
-        print(f"=" * 80)
-        print(f"ERROR in process_text endpoint")
+
+        print(f"\n{'='*80}")
+        print(f"❌ CRITICAL ERROR in process_text endpoint")
+        print(f"Error type: {type(e).__name__}")
         print(f"Error message: {error_msg}")
         print(f"Full traceback:")
         print(error_trace)
-        print(f"=" * 80)
+        print(f"{'='*80}\n")
 
-        # Return error as a valid JSON response instead of raising HTTPException
-        return {
-            "context_id": str(uuid.uuid4()),
-            "result": {
-                "actions_executed": 0,
-                "results": [],
-                "success": False,
-                "error": error_msg
-            },
-            "scene": {
-                "scene_id": str(uuid.uuid4()),
-                "objects": [],
-                "environment": {},
-                "lighting": {},
-                "camera": {},
-                "created_at": datetime.now().isoformat()
-            },
-            "status": "error",
-            "message": f"Endpoint error: {error_msg}"
-        }
+        # Make sure we return a valid response
+        error_response = error_response_template.copy()
+        error_response["status"] = "error"
+        error_response["message"] = f"Server error: {error_msg}"
+        error_response["result"]["error"] = error_msg
+        return error_response
 
 
 @router.get("/scene/{context_id}")
