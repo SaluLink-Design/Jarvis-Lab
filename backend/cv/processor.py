@@ -4,10 +4,29 @@ Computer Vision Processor
 Handles image and video analysis for 3D content generation.
 """
 from typing import Dict, Any, List, Optional
-import cv2
-import numpy as np
-from PIL import Image
 import asyncio
+
+# Try to import CV dependencies, use graceful fallback if unavailable
+try:
+    import cv2
+    HAS_CV2 = True
+except ImportError:
+    print("⚠️ Warning: OpenCV (cv2) not available, using fallback CV processor")
+    HAS_CV2 = False
+
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    print("⚠️ Warning: NumPy not available")
+    HAS_NUMPY = False
+
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    print("⚠️ Warning: PIL not available")
+    HAS_PIL = False
 
 
 class ComputerVisionProcessor:
@@ -141,4 +160,3 @@ class ComputerVisionProcessor:
             "brightness": float(avg_brightness),
             "mood": "bright" if avg_brightness > 150 else "dark"
         }
-
