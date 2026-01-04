@@ -72,28 +72,54 @@ async def process_request(
         raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
 
 
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint to verify API is working"""
+    return {
+        "status": "ok",
+        "message": "API is responding",
+        "endpoint": "/api/test"
+    }
+
+
 @router.post("/text")
 async def process_text(request: TextRequest):
     """
     Process text-only commands
     """
-    from main import orchestrator
     import traceback
 
-    if not orchestrator:
-        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
-
     try:
+        from main import orchestrator
+
+        print(f"Received text request: {request.text[:50] if request.text else 'None'}...")
+        print(f"Context ID: {request.context_id}")
+        print(f"Orchestrator available: {orchestrator is not None}")
+
+        if not orchestrator:
+            raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+
+        print(f"Orchestrator modules - NLP: {orchestrator.nlp_processor is not None}, CV: {orchestrator.cv_processor is not None}, 3D: {orchestrator.text_to_3d is not None}")
+
         result = await orchestrator.process_request(
             text=request.text,
             context_id=request.context_id
         )
+
+        print(f"Successfully processed request. Context ID: {result.get('context_id', 'unknown')}")
         return result
+
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e)
         error_trace = traceback.format_exc()
-        print(f"ERROR in process_text: {error_msg}")
-        print(f"Traceback: {error_trace}")
+        print(f"=" * 80)
+        print(f"ERROR in process_text endpoint")
+        print(f"Error message: {error_msg}")
+        print(f"Full traceback:")
+        print(error_trace)
+        print(f"=" * 80)
         raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
 
 
