@@ -55,17 +55,51 @@ Return your analysis in a structured JSON format."""
     async def process(self, text: str) -> Dict[str, Any]:
         """
         Process natural language input
-        
+
         Args:
             text: User's natural language command
-            
+
         Returns:
             Structured analysis of the input
         """
+        print(f"[NLP] Processing text: {text[:50]}...")
+
         if self.client:
-            return await self._process_with_llm(text)
+            try:
+                print(f"[NLP] Using LLM processor")
+                return await self._process_with_llm(text)
+            except Exception as e:
+                print(f"⚠️ [NLP] LLM processing failed: {e}, falling back to rules")
+                try:
+                    return await self._process_with_rules(text)
+                except Exception as rule_error:
+                    print(f"❌ [NLP] Rule-based processing also failed: {rule_error}")
+                    # Return a safe default
+                    return {
+                        "intent": "create",
+                        "entities": [],
+                        "attributes": {},
+                        "relationships": [],
+                        "raw_text": text,
+                        "method": "error_fallback",
+                        "error": str(rule_error)
+                    }
         else:
-            return await self._process_with_rules(text)
+            try:
+                print(f"[NLP] Using rule-based processor")
+                return await self._process_with_rules(text)
+            except Exception as e:
+                print(f"❌ [NLP] Rule-based processing failed: {e}")
+                # Return a safe default
+                return {
+                    "intent": "create",
+                    "entities": [],
+                    "attributes": {},
+                    "relationships": [],
+                    "raw_text": text,
+                    "method": "error_fallback",
+                    "error": str(e)
+                }
     
     async def _process_with_llm(self, text: str) -> Dict[str, Any]:
         """Process using OpenAI GPT"""
