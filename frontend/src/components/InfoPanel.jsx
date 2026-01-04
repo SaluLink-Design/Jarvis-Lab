@@ -3,7 +3,22 @@ import { useJarvisStore } from '../store/jarvisStore';
 import jarvisApi from '../api/jarvisApi';
 
 const InfoPanel = () => {
-  const { sceneData, commandHistory, loading, error } = useJarvisStore();
+  const { sceneData, commandHistory, loading, error, contextId, removeObject } = useJarvisStore();
+  const [deletingIndex, setDeletingIndex] = useState(null);
+
+  const handleDeleteObject = async (index) => {
+    if (!contextId) return;
+
+    setDeletingIndex(index);
+    try {
+      await jarvisApi.deleteObject(contextId, index);
+      removeObject(index);
+    } catch (err) {
+      console.error('Failed to delete object:', err);
+    } finally {
+      setDeletingIndex(null);
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
