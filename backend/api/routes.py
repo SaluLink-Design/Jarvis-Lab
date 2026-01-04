@@ -73,10 +73,11 @@ async def process_text(request: TextRequest):
     Process text-only commands
     """
     from main import orchestrator
-    
+    import traceback
+
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
-    
+
     try:
         result = await orchestrator.process_request(
             text=request.text,
@@ -84,7 +85,11 @@ async def process_text(request: TextRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = str(e)
+        error_trace = traceback.format_exc()
+        print(f"ERROR in process_text: {error_msg}")
+        print(f"Traceback: {error_trace}")
+        raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
 
 
 @router.get("/scene/{context_id}")
@@ -141,4 +146,3 @@ async def list_scenes():
         })
     
     return {"scenes": scenes, "count": len(scenes)}
-
