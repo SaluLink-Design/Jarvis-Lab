@@ -182,7 +182,7 @@ class TextTo3DGenerator:
         """Generate a plane (ground)"""
         size = self._parse_size(attributes.get("size", "large"))
         color = self._parse_color(attributes.get("color", "#228B22"))
-        
+
         return {
             "geometry": {
                 "type": "PlaneGeometry",
@@ -197,7 +197,7 @@ class TextTo3DGenerator:
                 "roughness": 0.9
             },
             "position": [0, 0, 0],
-            "rotation": [-Math.pi / 2, 0, 0]
+            "rotation": [-math.pi / 2, 0, 0]
         }
     
     def _generate_complex_object(
