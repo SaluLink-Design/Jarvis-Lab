@@ -51,27 +51,30 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware - allow all origins in development, be more restrictive in production
-allow_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173"
-]
+# CORS middleware - allow all origins for Railway deployment
+# In production, check if we're running on Railway
+is_production = os.getenv("RAILWAY_ENVIRONMENT_NAME") or os.getenv("PORT")
 
-# Add deployed frontend origins if specified
-deployed_frontend = os.getenv("FRONTEND_URL")
-if deployed_frontend:
-    allow_origins.append(deployed_frontend)
-
-# In production, also allow the fly.dev domain pattern
-if not os.getenv("DEBUG", "True").lower() == "true":
-    allow_origins.append("*")  # More permissive in production, can be restricted later
+if is_production:
+    # Railway deployment - allow all origins
+    allow_origins = ["*"]
+else:
+    # Local development
+    allow_origins = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173"
+    ]
+    # Add deployed frontend origins if specified
+    deployed_frontend = os.getenv("FRONTEND_URL")
+    if deployed_frontend:
+        allow_origins.append(deployed_frontend)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=True,
+    allow_credentials=True if not is_production else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

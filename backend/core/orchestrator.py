@@ -50,21 +50,37 @@ class JarvisOrchestrator:
         
     async def initialize(self):
         """Initialize all AI modules"""
-        print("📚 Initializing NLP Processor...")
-        self.nlp_processor = NLPProcessor()
-        await self.nlp_processor.initialize()
-        
-        print("👁️ Initializing Computer Vision Processor...")
-        self.cv_processor = ComputerVisionProcessor()
-        await self.cv_processor.initialize()
-        
-        print("🎨 Initializing 3D Generators...")
-        self.text_to_3d = TextTo3DGenerator()
-        await self.text_to_3d.initialize()
-        
-        print("🏗️ Initializing Scene Builder...")
-        self.scene_builder = SceneBuilder()
-        
+        try:
+            print("📚 Initializing NLP Processor...")
+            self.nlp_processor = NLPProcessor()
+            await self.nlp_processor.initialize()
+        except Exception as e:
+            print(f"⚠️ Warning: NLP Processor initialization failed: {e}")
+            self.nlp_processor = NLPProcessor()
+
+        try:
+            print("👁️ Initializing Computer Vision Processor...")
+            self.cv_processor = ComputerVisionProcessor()
+            await self.cv_processor.initialize()
+        except Exception as e:
+            print(f"⚠️ Warning: CV Processor initialization failed: {e}")
+            self.cv_processor = ComputerVisionProcessor()
+
+        try:
+            print("🎨 Initializing 3D Generators...")
+            self.text_to_3d = TextTo3DGenerator()
+            await self.text_to_3d.initialize()
+        except Exception as e:
+            print(f"⚠️ Warning: 3D Generator initialization failed: {e}")
+            self.text_to_3d = TextTo3DGenerator()
+
+        try:
+            print("🏗️ Initializing Scene Builder...")
+            self.scene_builder = SceneBuilder()
+        except Exception as e:
+            print(f"⚠️ Warning: Scene Builder initialization failed: {e}")
+            self.scene_builder = None
+
         # Load knowledge base
         self._load_knowledge_base()
         
