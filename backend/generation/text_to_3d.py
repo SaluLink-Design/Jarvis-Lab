@@ -6,6 +6,7 @@ Generates 3D models from natural language descriptions.
 from typing import Dict, Any, Optional
 import uuid
 import json
+import math
 
 
 class TextTo3DGenerator:
@@ -257,4 +258,3 @@ class TextTo3DGenerator:
             return color
         
         return color_map.get(color.lower(), "#808080")
-
