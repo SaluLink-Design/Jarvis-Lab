@@ -40,7 +40,8 @@ const CommandPanel = () => {
       setSelectedImage(null);
     } catch (error) {
       console.error('Error processing command:', error);
-      setError(error.message);
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to process command';
+      setError(`Error: ${errorMsg}`);
       setLoading(false);
     }
   };
@@ -142,4 +143,3 @@ const CommandPanel = () => {
 };
 
 export default CommandPanel;
-
