@@ -47,6 +47,12 @@ export const useJarvisStore = create((set) => ({
         error: null
       });
     }
-  }
-}));
+  },
 
+  removeObject: (index) => set((state) => ({
+    sceneData: {
+      ...state.sceneData,
+      objects: state.sceneData?.objects?.filter((_, i) => i !== index) || []
+    }
+  }))
+}));

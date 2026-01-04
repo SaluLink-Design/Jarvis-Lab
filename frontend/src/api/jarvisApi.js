@@ -86,6 +86,16 @@ class JarvisAPI {
       throw error;
     }
   }
+
+  async deleteObject(contextId, objectIndex) {
+    try {
+      const response = await axios.delete(`${API_BASE}/scene/${contextId}/object/${objectIndex}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in deleteObject:', error.response?.data || error.message);
+      throw error;
+    }
+  }
 }
 
 export default new JarvisAPI();

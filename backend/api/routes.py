@@ -248,10 +248,10 @@ async def list_scenes():
     List all active scene contexts
     """
     from main import orchestrator
-    
+
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
-    
+
     scenes = []
     for context_id, context in orchestrator.active_contexts.items():
         scenes.append({
@@ -260,5 +260,32 @@ async def list_scenes():
             "object_count": len(context.objects),
             "has_environment": bool(context.environment)
         })
-    
+
     return {"scenes": scenes, "count": len(scenes)}
+
+
+@router.delete("/scene/{context_id}/object/{object_index}")
+async def delete_scene_object(context_id: str, object_index: int):
+    """
+    Delete a specific object from a scene
+    """
+    from main import orchestrator
+
+    if not orchestrator:
+        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+
+    if context_id not in orchestrator.active_contexts:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    context = orchestrator.active_contexts[context_id]
+
+    if object_index < 0 or object_index >= len(context.objects):
+        raise HTTPException(status_code=404, detail="Object not found")
+
+    deleted_object = context.objects.pop(object_index)
+
+    return {
+        "status": "success",
+        "deleted_object": deleted_object,
+        "remaining_objects": len(context.objects)
+    }

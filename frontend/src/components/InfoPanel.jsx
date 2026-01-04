@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useJarvisStore } from '../store/jarvisStore';
+import jarvisApi from '../api/jarvisApi';
 
 const InfoPanel = () => {
-  const { sceneData, commandHistory, loading, error } = useJarvisStore();
+  const { sceneData, commandHistory, loading, error, contextId, removeObject } = useJarvisStore();
+  const [deletingIndex, setDeletingIndex] = useState(null);
+
+  const handleDeleteObject = async (index) => {
+    if (!contextId) return;
+
+    setDeletingIndex(index);
+    try {
+      await jarvisApi.deleteObject(contextId, index);
+      removeObject(index);
+    } catch (err) {
+      console.error('Failed to delete object:', err);
+    } finally {
+      setDeletingIndex(null);
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -39,7 +55,7 @@ const InfoPanel = () => {
       {/* Objects List */}
       <div className="flex-1 overflow-y-auto p-4 border-b border-gray-700">
         <h3 className="text-md font-semibold mb-3">Objects</h3>
-        
+
         {sceneData?.objects && sceneData.objects.length > 0 ? (
           <div className="space-y-2">
             {sceneData.objects.map((obj, index) => (
@@ -49,9 +65,19 @@ const InfoPanel = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium">{obj.type || 'Object'}</span>
-                  <span className="text-xs text-gray-400">#{index + 1}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-400">#{index + 1}</span>
+                    <button
+                      onClick={() => handleDeleteObject(index)}
+                      disabled={deletingIndex === index}
+                      className="text-xs px-2 py-1 bg-red-900/50 hover:bg-red-800 text-red-300 rounded transition-colors disabled:opacity-50"
+                      title="Delete this object"
+                    >
+                      {deletingIndex === index ? '...' : '✕'}
+                    </button>
+                  </div>
                 </div>
-                
+
                 {obj.material?.color && (
                   <div className="flex items-center space-x-2 mt-1">
                     <div
@@ -63,7 +89,7 @@ const InfoPanel = () => {
                     </span>
                   </div>
                 )}
-                
+
                 {obj.position && (
                   <div className="text-xs text-gray-400 mt-1">
                     Position: ({obj.position.map(p => p.toFixed(1)).join(', ')})
@@ -117,4 +143,3 @@ const InfoPanel = () => {
 };
 
 export default InfoPanel;
-
