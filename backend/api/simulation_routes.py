@@ -30,7 +30,7 @@ class AgentCommand(BaseModel):
 @router.post("/{context_id}/start")
 async def start_simulation(context_id: str):
     """Start the simulation for a scene"""
-    from backend.main import orchestrator
+    from main import orchestrator
 
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -58,7 +58,7 @@ async def start_simulation(context_id: str):
 @router.post("/{context_id}/stop")
 async def stop_simulation(context_id: str):
     """Stop the simulation"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -78,7 +78,7 @@ async def stop_simulation(context_id: str):
 @router.post("/{context_id}/step")
 async def step_simulation(context_id: str):
     """Advance simulation by one step"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -99,7 +99,7 @@ async def step_simulation(context_id: str):
 @router.get("/{context_id}/state")
 async def get_simulation_state(context_id: str):
     """Get current simulation state"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -115,7 +115,7 @@ async def get_simulation_state(context_id: str):
 @router.post("/{context_id}/force")
 async def apply_force(context_id: str, force_data: ForceApplication):
     """Apply a force to an object"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -136,7 +136,7 @@ async def apply_force(context_id: str, force_data: ForceApplication):
 @router.post("/{context_id}/agent")
 async def command_agent(context_id: str, cmd: AgentCommand):
     """Send a command to an agent"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
@@ -154,7 +154,7 @@ async def command_agent(context_id: str, cmd: AgentCommand):
 @router.post("/{context_id}/reset")
 async def reset_simulation(context_id: str):
     """Reset the simulation"""
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
