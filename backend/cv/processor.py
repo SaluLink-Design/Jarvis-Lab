@@ -116,19 +116,22 @@ class ComputerVisionProcessor:
             "error": "Video processing not yet implemented"
         }
     
-    def _extract_dominant_colors(self, img: np.ndarray, k: int = 5) -> List[List[int]]:
+    def _extract_dominant_colors(self, img, k: int = 5) -> List[List[int]]:
         """Extract dominant colors using k-means clustering"""
+        if not HAS_NUMPY:
+            return []
+
         # Reshape image to be a list of pixels
         pixels = img.reshape(-1, 3)
-        
+
         # Sample for performance
         if len(pixels) > 10000:
             indices = np.random.choice(len(pixels), 10000, replace=False)
             pixels = pixels[indices]
-        
+
         # Simple color extraction (could use k-means for better results)
         unique_colors = np.unique(pixels, axis=0)
-        
+
         # Return top 5 most common
         colors = unique_colors[:min(k, len(unique_colors))]
         return [color.tolist() for color in colors]
