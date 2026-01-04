@@ -153,25 +153,28 @@ class ComputerVisionProcessor:
             "has_depth_variation": float(np.std(gray) / 128.0)
         }
     
-    def _analyze_style(self, img: np.ndarray) -> Dict[str, Any]:
+    def _analyze_style(self, img) -> Dict[str, Any]:
         """Analyze artistic/visual style"""
+        if not HAS_CV2 or not HAS_NUMPY:
+            return {"style_type": "unknown"}
+
         # Simple style analysis based on color distribution and edges
         hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        
+
         # Saturation analysis
         saturation = hsv[:, :, 1]
         avg_saturation = np.mean(saturation)
-        
+
         # Brightness
         brightness = hsv[:, :, 2]
         avg_brightness = np.mean(brightness)
-        
+
         style = "realistic"
         if avg_saturation < 50:
             style = "grayscale" if avg_saturation < 20 else "muted"
         elif avg_saturation > 150:
             style = "vibrant"
-        
+
         return {
             "style_type": style,
             "saturation": float(avg_saturation),
