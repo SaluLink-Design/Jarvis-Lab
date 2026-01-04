@@ -37,7 +37,7 @@ async def process_request(
     - image: Uploaded image file
     - video_url: YouTube or video URL
     """
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -77,7 +77,7 @@ async def process_text(request: TextRequest):
     """
     Process text-only commands
     """
-    from backend.main import orchestrator
+    from main import orchestrator
     import traceback
 
     if not orchestrator:
@@ -102,7 +102,7 @@ async def get_scene(context_id: str):
     """
     Get current scene state
     """
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -119,7 +119,7 @@ async def delete_scene(context_id: str):
     """
     Delete a scene context
     """
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -136,7 +136,7 @@ async def list_scenes():
     """
     List all active scene contexts
     """
-    from backend.main import orchestrator
+    from main import orchestrator
     
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
