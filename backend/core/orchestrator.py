@@ -528,6 +528,52 @@ class JarvisOrchestrator:
         except Exception as e:
             print(f"Error modifying scene: {e}")
             return {"status": "error", "message": str(e)}
+
+    async def _delete_objects(
+        self,
+        action: Dict[str, Any],
+        context: SceneContext
+    ) -> Dict[str, Any]:
+        """Delete objects from the scene"""
+        try:
+            targets = action.get("targets", [])
+            deleted_count = 0
+
+            # If no targets specified, delete all objects
+            if not targets:
+                deleted_count = len(context.objects)
+                context.objects = []
+                return {
+                    "status": "success",
+                    "deleted_count": deleted_count,
+                    "message": f"Deleted all {deleted_count} objects"
+                }
+
+            # Delete specific targets by index or name
+            for target in targets:
+                if isinstance(target, int):
+                    # Delete by index
+                    if 0 <= target < len(context.objects):
+                        context.objects.pop(target)
+                        deleted_count += 1
+                elif isinstance(target, dict):
+                    # Delete by matching attributes
+                    target_value = target.get("value", "")
+                    context.objects = [obj for obj in context.objects if obj.get("type") != target_value]
+                    deleted_count += 1
+                elif isinstance(target, str):
+                    # Delete by object type or id
+                    context.objects = [obj for obj in context.objects if obj.get("type") != target and obj.get("id") != target]
+                    deleted_count += 1
+
+            return {
+                "status": "success",
+                "deleted_count": deleted_count,
+                "message": f"Deleted {deleted_count} object(s)"
+            }
+        except Exception as e:
+            print(f"Error deleting objects: {e}")
+            return {"status": "error", "message": str(e)}
     
     def _serialize_context(self, context: SceneContext) -> Dict[str, Any]:
         """Convert context to JSON-serializable format"""
