@@ -30,16 +30,16 @@ class AgentCommand(BaseModel):
 @router.post("/{context_id}/start")
 async def start_simulation(context_id: str):
     """Start the simulation for a scene"""
-    from main import orchestrator
-    
+    from backend.main import orchestrator
+
     if not orchestrator or context_id not in orchestrator.active_contexts:
         raise HTTPException(status_code=404, detail="Scene not found")
-    
+
     context = orchestrator.active_contexts[context_id]
-    
+
     # Initialize simulator if not exists
     if not hasattr(context, 'simulator'):
-        from simulation.simulator import Simulator
+        from backend.simulation.simulator import Simulator
         context.simulator = Simulator()
         context.simulator.initialize({
             "objects": context.objects,
@@ -166,4 +166,3 @@ async def reset_simulation(context_id: str):
         return {"status": "reset", "context_id": context_id}
     
     raise HTTPException(status_code=400, detail="No simulation to reset")
-
