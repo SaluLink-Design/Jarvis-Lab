@@ -8,8 +8,8 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv  # pyright: ignore[reportMissingImports]
 
-from core.orchestrator import JarvisOrchestrator
-from api.routes import router
+from backend.core.orchestrator import JarvisOrchestrator
+from backend.api.routes import router
 
 # Load environment variables
 load_dotenv()
