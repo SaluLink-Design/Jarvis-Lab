@@ -34,42 +34,78 @@ class TextTo3DGenerator:
         print("✓ Text-to-3D Generator ready (using procedural fallback)")
     
     async def generate(
-        self, 
-        prompt: str, 
+        self,
+        prompt: str,
         attributes: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Generate a 3D model from text
-        
+
         Args:
             prompt: Text description of the object
             attributes: Additional attributes (color, size, material)
-            
+
         Returns:
             3D model data in a structured format
         """
-        if attributes is None:
-            attributes = {}
-        
-        # Extract object type from prompt
-        object_type = self._extract_object_type(prompt)
-        
-        # Generate based on type
-        if object_type in self.primitive_shapes:
-            model_data = self.primitive_shapes[object_type](attributes)
-        else:
-            # For complex objects, create a placeholder
-            model_data = self._generate_complex_object(prompt, attributes)
-        
-        # Add metadata
-        model_data.update({
-            "id": str(uuid.uuid4()),
-            "prompt": prompt,
-            "type": object_type,
-            "generated_by": "text_to_3d"
-        })
-        
-        return model_data
+        print(f"[3D_GEN] Generating 3D model from prompt: {prompt}")
+
+        try:
+            if attributes is None:
+                attributes = {}
+
+            # Extract object type from prompt
+            object_type = self._extract_object_type(prompt)
+            print(f"[3D_GEN] Extracted object type: {object_type}")
+
+            # Generate based on type
+            if object_type in self.primitive_shapes:
+                print(f"[3D_GEN] Using primitive shape generator for: {object_type}")
+                model_data = self.primitive_shapes[object_type](attributes)
+            else:
+                # For complex objects, create a placeholder
+                print(f"[3D_GEN] Using complex object generator for: {object_type}")
+                model_data = self._generate_complex_object(prompt, attributes)
+
+            # Add metadata
+            model_data.update({
+                "id": str(uuid.uuid4()),
+                "prompt": prompt,
+                "type": object_type,
+                "generated_by": "text_to_3d"
+            })
+
+            print(f"[3D_GEN] 3D model generated successfully")
+            return model_data
+
+        except Exception as e:
+            print(f"❌ [3D_GEN] Error generating 3D model: {e}")
+            import traceback
+            traceback.print_exc()
+
+            # Return a fallback cube
+            return {
+                "id": str(uuid.uuid4()),
+                "prompt": prompt,
+                "type": "cube",
+                "generated_by": "text_to_3d_fallback",
+                "error": str(e),
+                "geometry": {
+                    "type": "BoxGeometry",
+                    "parameters": {
+                        "width": 2.0,
+                        "height": 2.0,
+                        "depth": 2.0
+                    }
+                },
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "color": "#0000ff",
+                    "metalness": 0.3,
+                    "roughness": 0.7
+                },
+                "position": [0, 1, 0]
+            }
     
     def _extract_object_type(self, prompt: str) -> str:
         """Extract the main object type from the prompt"""
