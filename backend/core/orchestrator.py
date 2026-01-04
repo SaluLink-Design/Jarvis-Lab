@@ -285,73 +285,92 @@ class JarvisOrchestrator:
         """
         Create a sequence of actions based on processed inputs
         """
+        print(f"[ACTION_PLAN] Creating action plan from processed data")
         plan = []
 
-        text_analysis = processed_data.get("text_analysis") or {}
-        image_analysis = processed_data.get("image_analysis") or {}
+        try:
+            text_analysis = processed_data.get("text_analysis") or {}
+            image_analysis = processed_data.get("image_analysis") or {}
 
-        # Analyze intent from text
-        if text_analysis and not text_analysis.get("error"):
-            intent = text_analysis.get("intent", "create")
-            entities = text_analysis.get("entities", [])
-            attributes = text_analysis.get("attributes", {})
+            # Analyze intent from text
+            if text_analysis and not text_analysis.get("error"):
+                print(f"[ACTION_PLAN] Text analysis available")
+                intent = text_analysis.get("intent", "create")
+                entities = text_analysis.get("entities", [])
+                attributes = text_analysis.get("attributes", {})
+                print(f"[ACTION_PLAN] Intent: {intent}, Entities: {len(entities)}, Attributes: {attributes}")
 
-            if intent == "create":
-                # Plan for creating new objects
-                if entities:
-                    for entity in entities:
-                        if entity.get("type") == "object":
-                            plan.append({
-                                "action": "generate_object",
-                                "object_type": entity.get("value"),
-                                "attributes": entity.get("attributes", {})
-                            })
-                        elif entity.get("type") == "environment":
-                            plan.append({
-                                "action": "generate_environment",
-                                "environment_type": entity.get("value")
-                            })
-                else:
-                    # No entities found, create a default object
+                if intent == "create":
+                    # Plan for creating new objects
+                    if entities:
+                        for entity in entities:
+                            if entity.get("type") == "object":
+                                plan.append({
+                                    "action": "generate_object",
+                                    "object_type": entity.get("value"),
+                                    "attributes": entity.get("attributes", {})
+                                })
+                            elif entity.get("type") == "environment":
+                                plan.append({
+                                    "action": "generate_environment",
+                                    "environment_type": entity.get("value")
+                                })
+                    else:
+                        # No entities found, create a default object
+                        print(f"[ACTION_PLAN] No entities found, using default cube")
+                        plan.append({
+                            "action": "generate_object",
+                            "object_type": "cube",
+                            "attributes": attributes
+                        })
+
+                elif intent == "modify":
+                    # Plan for modifying existing objects
                     plan.append({
-                        "action": "generate_object",
-                        "object_type": "cube",
-                        "attributes": attributes
+                        "action": "modify_scene",
+                        "modifications": text_analysis.get("modifications", {})
                     })
 
-            elif intent == "modify":
-                # Plan for modifying existing objects
+                elif intent == "delete":
+                    # Plan for deleting objects
+                    plan.append({
+                        "action": "delete_objects",
+                        "targets": entities
+                    })
+
+            # Enhance with image data
+            if image_analysis and not image_analysis.get("error"):
+                print(f"[ACTION_PLAN] Image analysis available")
+                detected_objects = image_analysis.get("objects", [])
+                if detected_objects:
+                    plan.append({
+                        "action": "reference_image",
+                        "objects": detected_objects,
+                        "style": image_analysis.get("style", {})
+                    })
+
+            # If no plan was created, add a default action
+            if not plan:
+                print(f"[ACTION_PLAN] No plan created, using default cube")
                 plan.append({
-                    "action": "modify_scene",
-                    "modifications": text_analysis.get("modifications", {})
+                    "action": "generate_object",
+                    "object_type": "cube",
+                    "attributes": {"color": "blue"}
                 })
 
-            elif intent == "delete":
-                # Plan for deleting objects
-                plan.append({
-                    "action": "delete_objects",
-                    "targets": entities
-                })
+            print(f"[ACTION_PLAN] Plan created with {len(plan)} actions: {[p['action'] for p in plan]}")
+            return plan
 
-        # Enhance with image data
-        if image_analysis and not image_analysis.get("error"):
-            detected_objects = image_analysis.get("objects", [])
-            if detected_objects:
-                plan.append({
-                    "action": "reference_image",
-                    "objects": detected_objects,
-                    "style": image_analysis.get("style", {})
-                })
-
-        # If no plan was created, add a default action
-        if not plan:
-            plan.append({
+        except Exception as e:
+            print(f"⚠️ [ACTION_PLAN] Error in action plan creation: {e}")
+            import traceback
+            traceback.print_exc()
+            # Return a default plan
+            return [{
                 "action": "generate_object",
                 "object_type": "cube",
                 "attributes": {"color": "blue"}
-            })
-
-        return plan
+            }]
     
     async def _execute_action_plan(
         self,
