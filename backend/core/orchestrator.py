@@ -358,14 +358,27 @@ class JarvisOrchestrator:
                                     "environment_type": entity.get("value")
                                 })
                     else:
-                        # No entities found, create a default object with image attributes
-                        print(f"[ACTION_PLAN] No entities found in text, using default object with image attributes")
-                        image_attrs = self._extract_image_attributes(image_analysis)
-                        plan.append({
-                            "action": "generate_object",
-                            "object_type": "cube",
-                            "attributes": {**attributes, **image_attrs}
-                        })
+                        # No entities found in text
+                        # Check if this is an image-based request
+                        if has_image:
+                            print(f"[ACTION_PLAN] No entities found but image provided, treating as image-based generation")
+                            image_attrs = self._extract_image_attributes(image_analysis)
+                            plan.append({
+                                "action": "generate_object",
+                                "object_type": "complex",
+                                "prompt": text,
+                                "attributes": {**attributes, **image_attrs},
+                                "source": "image_with_description"
+                            })
+                        else:
+                            # No entities and no image, create a default object
+                            print(f"[ACTION_PLAN] No entities found in text and no image, using default cube")
+                            image_attrs = self._extract_image_attributes(image_analysis)
+                            plan.append({
+                                "action": "generate_object",
+                                "object_type": "cube",
+                                "attributes": {**attributes, **image_attrs}
+                            })
 
                 elif intent == "modify":
                     # Plan for modifying existing objects
