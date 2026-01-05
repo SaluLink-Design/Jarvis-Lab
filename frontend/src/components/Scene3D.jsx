@@ -11,22 +11,26 @@ const Scene3D = () => {
   return (
     <Canvas
       shadows
-      gl={{ antialias: true }}
-      className="w-full h-full"
+      gl={{ antialias: true, alpha: true }}
+      className="w-full h-full bg-slate-950"
+      camera={{ position: [15, 12, 15], fov: 50 }}
     >
-      {/* Camera */}
-      <PerspectiveCamera makeDefault position={[10, 10, 10]} fov={60} />
-
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
+      {/* Lighting - Enhanced for better visibility */}
+      <ambientLight intensity={0.8} />
       <directionalLight
-        position={[10, 10, 5]}
-        intensity={1}
+        position={[15, 15, 10]}
+        intensity={1.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        shadow-camera-far={100}
+        shadow-camera-left={-50}
+        shadow-camera-right={50}
+        shadow-camera-top={50}
+        shadow-camera-bottom={-50}
       />
-      <pointLight position={[-10, 5, -10]} intensity={0.5} />
+      <pointLight position={[-15, 10, -15]} intensity={0.8} color="#60a5fa" />
+      <pointLight position={[15, 5, 15]} intensity={0.6} color="#f59e0b" />
 
       {/* Environment */}
       <Sky
@@ -72,4 +76,3 @@ const Scene3D = () => {
 };
 
 export default Scene3D;
-
