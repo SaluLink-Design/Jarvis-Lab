@@ -22,13 +22,26 @@ const API_BASE = getApiBase();
 class JarvisAPI {
   async processText(text, contextId = null) {
     try {
+      console.log(`[API] Sending text request to ${API_BASE}/text`);
+      console.log(`[API] Backend URL: ${API_BASE}`);
+      console.log(`[API] Text: ${text}, Context: ${contextId}`);
+
       const response = await axios.post(`${API_BASE}/text`, {
         text,
         context_id: contextId
       });
+
+      console.log('[API] Response received:', response.data);
       return response.data;
     } catch (error) {
       console.error('API Error in processText:', error.response?.data || error.message);
+      console.error('API Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        config: error.config
+      });
       throw error;
     }
   }

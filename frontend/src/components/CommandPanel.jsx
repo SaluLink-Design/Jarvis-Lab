@@ -128,6 +128,11 @@ const CommandPanel = () => {
           </div>
         )}
 
+        {/* Info Message */}
+        <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-xs text-slate-300">
+          💡 <strong>Getting Started:</strong> Try "Create a blue sphere" or "Add a red cube" to generate 3D objects
+        </div>
+
         {/* Example Commands */}
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-gray-400">Examples:</span>

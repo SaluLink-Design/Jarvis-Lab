@@ -129,13 +129,20 @@ const InfoPanel = () => {
       {/* Status/Error */}
       {loading && (
         <div className="p-4 bg-blue-900/30 border-t border-blue-700">
-          <p className="text-sm text-blue-300">Processing...</p>
+          <p className="text-sm text-blue-300 font-medium">⚙️ Processing your command...</p>
+          <p className="text-xs text-blue-200 mt-1">This may take a moment as the AI generates 3D content</p>
         </div>
       )}
-      
+
       {error && (
         <div className="p-4 bg-red-900/30 border-t border-red-700">
-          <p className="text-sm text-red-300">{error}</p>
+          <p className="text-sm text-red-300 font-medium">⚠️ Error</p>
+          <p className="text-xs text-red-200 mt-1">{error}</p>
+          {error.includes('503') && (
+            <p className="text-xs text-yellow-300 mt-2">
+              💡 Tip: Make sure your backend is running and your OpenAI API key is configured
+            </p>
+          )}
         </div>
       )}
     </div>
