@@ -402,6 +402,21 @@ class JarvisOrchestrator:
                     "source": "image_analysis"
                 })
 
+            # Handle case where text doesn't match any entities but image exists
+            elif not entities and has_image:
+                print(f"[ACTION_PLAN] Text provided but no recognized entities, using image analysis")
+                image_attrs = self._extract_image_attributes(image_analysis)
+                print(f"[ACTION_PLAN] Image attributes extracted: {image_attrs}")
+
+                # Use the original text as a description for image-based generation
+                plan.append({
+                    "action": "generate_object",
+                    "object_type": "complex",
+                    "prompt": text,
+                    "attributes": image_attrs,
+                    "source": "image_with_description"
+                })
+
             # Enhance with image data if both text and image exist
             if has_image and has_text:
                 print(f"[ACTION_PLAN] Enhancing plan with image styling")
