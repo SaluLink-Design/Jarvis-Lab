@@ -21,12 +21,20 @@ const App = () => {
               <p className="text-sm text-gray-400">3D AI Assistant</p>
             </div>
           </div>
-          
-          {contextId && (
-            <div className="text-sm text-gray-400">
-              Scene: <span className="text-jarvis-blue font-mono">{contextId.slice(0, 8)}</span>
-            </div>
-          )}
+
+          <div className="flex items-center space-x-4">
+            {contextId && contextId !== 'welcome' && (
+              <div className="text-sm text-gray-400">
+                Scene: <span className="text-jarvis-blue font-mono">{contextId.slice(0, 8)}</span>
+              </div>
+            )}
+            {contextId === 'welcome' && (
+              <div className="text-sm text-green-400 flex items-center space-x-1">
+                <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                <span>Welcome Scene</span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -58,4 +66,3 @@ const App = () => {
 };
 
 export default App;
-
