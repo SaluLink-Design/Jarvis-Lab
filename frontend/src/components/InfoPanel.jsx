@@ -20,8 +20,16 @@ const InfoPanel = () => {
     setDeletingIndex(index);
     try {
       console.log(`[InfoPanel] Attempting to delete object at index ${index} from context ${contextId}`);
-      const response = await jarvisApi.deleteObject(contextId, index);
-      console.log('[InfoPanel] Successfully deleted object:', response);
+
+      // Only call backend API if this is not the demo/welcome scene
+      if (contextId !== 'welcome') {
+        const response = await jarvisApi.deleteObject(contextId, index);
+        console.log('[InfoPanel] Successfully deleted object on backend:', response);
+      } else {
+        console.log('[InfoPanel] Deleting from demo scene (no backend sync needed)');
+      }
+
+      // Update frontend store regardless
       removeObject(index);
     } catch (err) {
       console.error('Failed to delete object:', {
