@@ -312,12 +312,18 @@ class JarvisOrchestrator:
         """
         Create a sequence of actions based on processed inputs
         """
-        print(f"[ACTION_PLAN] Creating action plan from processed data")
+        print(f"\n[ACTION_PLAN] Creating action plan from processed data")
+        print(f"[ACTION_PLAN] Processed data keys: {processed_data.keys()}")
         plan = []
 
         try:
             text_analysis = processed_data.get("text_analysis") or {}
             image_analysis = processed_data.get("image_analysis") or {}
+
+            print(f"[ACTION_PLAN] Text analysis: {text_analysis.get('intent') if text_analysis else 'None'}")
+            print(f"[ACTION_PLAN] Image analysis error: {image_analysis.get('error')}")
+            print(f"[ACTION_PLAN] Image analysis keys: {image_analysis.keys() if image_analysis else 'None'}")
+
             has_text = text_analysis and not text_analysis.get("error")
             has_image = image_analysis and not image_analysis.get("error")
 
