@@ -102,10 +102,22 @@ class JarvisAPI {
 
   async deleteObject(contextId, objectIndex) {
     try {
+      console.log(`[API] Deleting object at index ${objectIndex} from scene ${contextId}`);
+      console.log(`[API] Full URL: ${API_BASE}/scene/${contextId}/object/${objectIndex}`);
+
       const response = await axios.delete(`${API_BASE}/scene/${contextId}/object/${objectIndex}`);
+      console.log('[API] Delete response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('API Error in deleteObject:', error.response?.data || error.message);
+      console.error('API Error in deleteObject:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: `${API_BASE}/scene/${contextId}/object/${objectIndex}`,
+        contextId: contextId,
+        objectIndex: objectIndex
+      });
       throw error;
     }
   }
