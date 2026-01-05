@@ -120,11 +120,9 @@ const CommandPanel = () => {
                 Remove
               </button>
             </div>
-            {!command.trim() && (
-              <div className="px-3 py-2 bg-blue-900 bg-opacity-30 border border-blue-700 rounded-md text-sm text-blue-300">
-                💡 Tip: Describe what you'd like to create from this image (e.g., "Create a modern chair based on this image")
-              </div>
-            )}
+            <div className="px-3 py-2 bg-blue-900 bg-opacity-30 border border-blue-700 rounded-md text-sm text-blue-300">
+              💡 <strong>Describe the image:</strong> Tell me what to create from it (e.g., "Generate a 3D model of an iron man suit from this image")
+            </div>
           </div>
         )}
 
