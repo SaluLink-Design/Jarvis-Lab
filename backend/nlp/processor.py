@@ -39,18 +39,26 @@ Return your analysis in a structured JSON format."""
     async def initialize(self):
         """Initialize the NLP models"""
         api_key = os.getenv("OPENAI_API_KEY")
+
+        # Log the current state
+        print(f"[NLP_INIT] OPENAI_API_KEY present: {bool(api_key)}")
+        print(f"[NLP_INIT] HAS_OPENAI library: {HAS_OPENAI}")
+
         if api_key and HAS_OPENAI:
             try:
+                print(f"[NLP_INIT] Attempting to initialize OpenAI client...")
                 self.client = AsyncOpenAI(api_key=api_key)
-                print("✓ OpenAI NLP processor initialized")
+                print("✓ OpenAI NLP processor initialized successfully")
             except Exception as e:
-                print(f"⚠️ Warning: Could not initialize OpenAI: {e}")
+                print(f"⚠️ Warning: Could not initialize OpenAI: {type(e).__name__}: {e}")
+                print(f"[NLP_INIT] Falling back to rule-based NLP")
                 self.client = None
         else:
             if not HAS_OPENAI:
                 print("⚠️ Warning: OpenAI library not available, using rule-based NLP")
-            elif not api_key:
-                print("⚠️ Warning: OPENAI_API_KEY not set, using rule-based NLP")
+            if not api_key:
+                print("⚠️ Warning: OPENAI_API_KEY environment variable not found, using rule-based NLP")
+            self.client = None
     
     async def process(self, text: str) -> Dict[str, Any]:
         """
