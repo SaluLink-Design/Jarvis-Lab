@@ -132,8 +132,10 @@ class TextTo3DGenerator:
     def _generate_cube(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a cube"""
         size = self._parse_size(attributes.get("size", "medium"))
-        color = self._parse_color(attributes.get("color", "gray"))
-        
+
+        # Try to use hex color first (from images), fall back to color name
+        color = attributes.get("hex_color") or self._parse_color(attributes.get("color", "gray"))
+
         return {
             "geometry": {
                 "type": "BoxGeometry",
