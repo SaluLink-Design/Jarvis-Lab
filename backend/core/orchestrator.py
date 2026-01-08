@@ -420,7 +420,8 @@ class JarvisOrchestrator:
                     "action": "generate_object",
                     "object_type": object_type,
                     "attributes": image_attrs,
-                    "source": "image_analysis"
+                    "source": "image_analysis",
+                    "prompt": "3D object based on uploaded image"
                 })
 
             # Handle case where text doesn't match any entities but image exists
