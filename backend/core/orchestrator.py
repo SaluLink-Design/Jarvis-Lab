@@ -430,11 +430,15 @@ class JarvisOrchestrator:
                 image_attrs = self._extract_image_attributes(image_analysis)
                 print(f"[ACTION_PLAN] Image attributes extracted: {image_attrs}")
 
+                # For images, determine shape based on complexity
+                complexity = image_analysis.get("complexity", 0.5)
+                object_type = "sphere" if complexity > 0.5 else "cube"
+
                 # Use the original text as a description for image-based generation
                 plan.append({
                     "action": "generate_object",
-                    "object_type": "complex",
-                    "prompt": text,
+                    "object_type": object_type,
+                    "prompt": text or "3D object based on uploaded image",
                     "attributes": image_attrs,
                     "source": "image_with_description"
                 })
