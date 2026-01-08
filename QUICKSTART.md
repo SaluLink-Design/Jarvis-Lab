@@ -25,15 +25,18 @@ venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy environment file and configure
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY (optional but recommended)
+# Configure OpenAI API key (optional but recommended)
+# Copy .env.example to .env and add your key
+# OR set it as an environment variable
+# See BACKEND_SETUP.md for detailed instructions
 
 # Start the backend
 python main.py
 ```
 
 The backend will start on `http://localhost:8000`
+
+**Note:** The OpenAI API key is **optional**. The system works perfectly without it using rule-based NLP. See [BACKEND_SETUP.md](./BACKEND_SETUP.md) for detailed setup instructions.
 
 ### 2. Frontend Setup
 
