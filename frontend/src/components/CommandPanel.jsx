@@ -24,14 +24,24 @@ const CommandPanel = () => {
 
       if (selectedImage) {
         // Multimodal request with image
+        console.log('[CommandPanel] Processing image upload:', {
+          filename: selectedImage.name,
+          size: selectedImage.size,
+          type: selectedImage.type,
+          textDescription: command || '(empty - will use color-based generation)'
+        });
+
         const formData = new FormData();
         formData.append('text', command);
         if (contextId) formData.append('context_id', contextId);
         formData.append('image', selectedImage);
 
+        console.log('[CommandPanel] Sending request to /api/process');
         response = await jarvisApi.processMultimodal(formData);
+        console.log('[CommandPanel] Image processing response:', response);
       } else {
         // Text-only request
+        console.log('[CommandPanel] Processing text-only command:', command);
         response = await jarvisApi.processText(command, contextId);
       }
 
