@@ -40,7 +40,15 @@ const CommandPanel = () => {
       setSelectedImage(null);
     } catch (error) {
       console.error('Error processing command:', error);
-      const errorMsg = error.response?.data?.detail || error.message || 'Failed to process command';
+      let errorMsg = error.response?.data?.detail || error.message || 'Failed to process command';
+
+      // Provide more helpful error messages
+      if (error.code === 'ERR_NETWORK' || !error.response) {
+        errorMsg = 'Cannot connect to backend - make sure the backend server is running on your machine';
+      } else if (error.response?.status === 503) {
+        errorMsg = 'Backend service unavailable - check server initialization errors';
+      }
+
       setError(`Error: ${errorMsg}`);
       setLoading(false);
     }
