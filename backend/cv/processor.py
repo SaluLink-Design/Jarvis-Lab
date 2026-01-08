@@ -161,25 +161,61 @@ class ComputerVisionProcessor:
             "error": "Video processing not yet implemented"
         }
     
+    def _extract_colors_from_pil(self, pil_img) -> List[List[int]]:
+        """Extract dominant colors from PIL image"""
+        try:
+            # Convert to RGB if needed
+            if pil_img.mode != 'RGB':
+                pil_img = pil_img.convert('RGB')
+
+            # Resize for faster processing
+            pil_img.thumbnail((100, 100))
+
+            # Get the image data
+            pixels = list(pil_img.getdata())
+
+            if not pixels:
+                return []
+
+            # Simple color extraction - get unique colors
+            unique_colors = {}
+            for pixel in pixels:
+                if isinstance(pixel, tuple) and len(pixel) >= 3:
+                    rgb = tuple(pixel[:3])
+                    unique_colors[rgb] = unique_colors.get(rgb, 0) + 1
+
+            # Get top 5 most common colors
+            sorted_colors = sorted(unique_colors.items(), key=lambda x: x[1], reverse=True)
+            top_colors = [list(color[0]) for color in sorted_colors[:5]]
+
+            return top_colors
+        except Exception as e:
+            print(f"[CV_PROCESSOR] Error extracting colors from PIL: {e}")
+            return []
+
     def _extract_dominant_colors(self, img, k: int = 5) -> List[List[int]]:
         """Extract dominant colors using k-means clustering"""
         if not HAS_NUMPY:
             return []
 
-        # Reshape image to be a list of pixels
-        pixels = img.reshape(-1, 3)
+        try:
+            # Reshape image to be a list of pixels
+            pixels = img.reshape(-1, 3)
 
-        # Sample for performance
-        if len(pixels) > 10000:
-            indices = np.random.choice(len(pixels), 10000, replace=False)
-            pixels = pixels[indices]
+            # Sample for performance
+            if len(pixels) > 10000:
+                indices = np.random.choice(len(pixels), 10000, replace=False)
+                pixels = pixels[indices]
 
-        # Simple color extraction (could use k-means for better results)
-        unique_colors = np.unique(pixels, axis=0)
+            # Simple color extraction (could use k-means for better results)
+            unique_colors = np.unique(pixels, axis=0)
 
-        # Return top 5 most common
-        colors = unique_colors[:min(k, len(unique_colors))]
-        return [color.tolist() for color in colors]
+            # Return top 5 most common
+            colors = unique_colors[:min(k, len(unique_colors))]
+            return [color.tolist() for color in colors]
+        except Exception as e:
+            print(f"[CV_PROCESSOR] Error in color extraction: {e}")
+            return []
     
     def _estimate_depth(self, img) -> Dict[str, Any]:
         """Simplified depth estimation"""
