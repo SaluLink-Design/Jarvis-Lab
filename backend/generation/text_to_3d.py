@@ -157,7 +157,7 @@ class TextTo3DGenerator:
     def _generate_sphere(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a sphere"""
         size = self._parse_size(attributes.get("size", "medium"))
-        color = self._parse_color(attributes.get("color", "gray"))
+        color = attributes.get("hex_color") or self._parse_color(attributes.get("color", "gray"))
         
         return {
             "geometry": {
