@@ -124,31 +124,51 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
+    openai_key_set = bool(os.getenv("OPENAI_API_KEY"))
+
+    health_status = {
+        "status": "healthy" if orchestrator is not None else "unhealthy",
         "orchestrator_ready": orchestrator is not None,
-        "modules": {
-            "nlp": orchestrator.nlp_processor is not None if orchestrator else False,
-            "cv": orchestrator.cv_processor is not None if orchestrator else False,
-            "text_to_3d": orchestrator.text_to_3d is not None if orchestrator else False,
-            "scene_builder": orchestrator.scene_builder is not None if orchestrator else False
-        } if orchestrator else {}
+        "openai_api_key_set": openai_key_set,
     }
+
+    if orchestrator:
+        health_status["modules"] = {
+            "nlp": orchestrator.nlp_processor is not None,
+            "cv": orchestrator.cv_processor is not None,
+            "text_to_3d": orchestrator.text_to_3d is not None,
+            "scene_builder": orchestrator.scene_builder is not None
+        }
+        # Check if OpenAI client is initialized
+        if orchestrator.nlp_processor:
+            health_status["openai_client_initialized"] = orchestrator.nlp_processor.client is not None
+
+    return health_status
 
 
 @app.get("/api/health")
 async def api_health_check():
     """API Health check endpoint"""
-    return {
-        "status": "healthy",
+    openai_key_set = bool(os.getenv("OPENAI_API_KEY"))
+
+    health_status = {
+        "status": "healthy" if orchestrator is not None else "unhealthy",
         "orchestrator_ready": orchestrator is not None,
-        "modules": {
-            "nlp": orchestrator.nlp_processor is not None if orchestrator else False,
-            "cv": orchestrator.cv_processor is not None if orchestrator else False,
-            "text_to_3d": orchestrator.text_to_3d is not None if orchestrator else False,
-            "scene_builder": orchestrator.scene_builder is not None if orchestrator else False
-        } if orchestrator else {}
+        "openai_api_key_set": openai_key_set,
     }
+
+    if orchestrator:
+        health_status["modules"] = {
+            "nlp": orchestrator.nlp_processor is not None,
+            "cv": orchestrator.cv_processor is not None,
+            "text_to_3d": orchestrator.text_to_3d is not None,
+            "scene_builder": orchestrator.scene_builder is not None
+        }
+        # Check if OpenAI client is initialized
+        if orchestrator.nlp_processor:
+            health_status["openai_client_initialized"] = orchestrator.nlp_processor.client is not None
+
+    return health_status
 
 
 if __name__ == "__main__":
