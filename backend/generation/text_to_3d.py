@@ -180,7 +180,7 @@ class TextTo3DGenerator:
     def _generate_cylinder(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a cylinder"""
         size = self._parse_size(attributes.get("size", "medium"))
-        color = self._parse_color(attributes.get("color", "gray"))
+        color = attributes.get("hex_color") or self._parse_color(attributes.get("color", "gray"))
         
         return {
             "geometry": {
@@ -202,7 +202,7 @@ class TextTo3DGenerator:
     def _generate_cone(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a cone"""
         size = self._parse_size(attributes.get("size", "medium"))
-        color = self._parse_color(attributes.get("color", "gray"))
+        color = attributes.get("hex_color") or self._parse_color(attributes.get("color", "gray"))
         
         return {
             "geometry": {
@@ -223,7 +223,7 @@ class TextTo3DGenerator:
     def _generate_plane(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a plane (ground)"""
         size = self._parse_size(attributes.get("size", "large"))
-        color = self._parse_color(attributes.get("color", "#228B22"))
+        color = attributes.get("hex_color") or self._parse_color(attributes.get("color", "#228B22"))
 
         return {
             "geometry": {
